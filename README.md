@@ -45,6 +45,11 @@ files, and browsers only hand controllers to pages served over **HTTPS**, so hos
 4. Optional: *Add to Home Screen* for an app icon that launches full-screen. On iPhone, Safari can't
    make a page fullscreen any other way.
 
+**iPhone notes:** open the link in **Safari** itself, not in another app's built-in browser, because
+in-app browsers often don't pass controllers through. The game asks iOS to play its sound even with
+the ring/silent switch on (iOS 16.4+); on older iOS, flip the switch off. If a controller stops
+responding after you reopen the home-screen app, open the link in Safari instead.
+
 While the game is open it asks the phone to keep the screen awake, so it won't dim when you're only
 using the controller. Several controllers can pair with one phone, but four players will be happier
 on a TV or laptop screen.

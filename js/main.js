@@ -39,8 +39,9 @@
   };
   // First tap on a phone: go fullscreen + landscape (where the browser allows it).
   let firstTap = true;
-  window.addEventListener('pointerdown', (e) => {
-    if (firstTap && SG.isTouch && e.pointerType !== 'mouse') { firstTap = false; if (!SG.isFullscreen()) SG.goFullscreen(); }
+  // (pointerup, not pointerdown: a touch only counts as a user gesture when the finger lifts)
+  window.addEventListener('pointerup', (e) => {
+    if (firstTap && SG.isTouch && e.pointerType !== 'mouse') { firstTap = false; if (!SG.isFullscreen() && SG.canFullscreen()) SG.goFullscreen(); }
   });
   // Controller-only play doesn't count as touching the screen, so ask the OS not to dim it.
   let wakeLock = null;
@@ -52,7 +53,8 @@
     } catch (e) { wakeLock = null; }
   }
   document.addEventListener('visibilitychange', () => { if (!document.hidden) keepAwake(); });
-  window.addEventListener('pointerdown', keepAwake);
+  window.addEventListener('pointerup', keepAwake);
+  window.addEventListener('touchend', keepAwake, { passive: true });
   window.addEventListener('keydown', keepAwake);
   // Installable web app (only when served over http/https; file:// can't load a manifest).
   if (/^https?:/.test(location.protocol)) {
@@ -206,6 +208,8 @@
     if (started) return;
     started = true;
     SG.DEBUG = /debug/.test(location.search);
+    // iPhone: play game sound like media, so the ring/silent switch doesn't mute it (Safari 16.4+).
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* unsupported */ }
     SG.Audio.init();
     keepAwake();
     SG.Audio.setVolumes(SG.settings.master, SG.settings.music, SG.settings.sfx);

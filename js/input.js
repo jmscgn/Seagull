@@ -61,6 +61,10 @@
   window.addEventListener('keyup', (e) => { keysDown.delete(e.code); });
   window.addEventListener('blur', () => { keysDown.clear(); });
   window.addEventListener('pointerdown', () => { clickedThisFrame = true; if (SG.Audio && SG.Audio.unlock) SG.Audio.unlock(); });
+  // Browsers (iOS Safari especially) only treat the END of a tap as a user gesture, so unlock there too.
+  for (const ev of ['pointerup', 'touchend', 'click']) {
+    window.addEventListener(ev, () => { if (SG.Audio && SG.Audio.unlock) SG.Audio.unlock(); }, { passive: true });
+  }
 
   const DEADZONE = 0.28;
   const REPEAT_DELAY = 0.38, REPEAT_RATE = 0.11;
