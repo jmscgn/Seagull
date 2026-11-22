@@ -10,6 +10,8 @@ window.SG = window.SG || {};
 
   // Phones & tablets (coarse pointer): used for tap prompts, fullscreen and the rotate hint.
   SG.isTouch = !!((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || ('ontouchstart' in window));
+  // Phones get the "turn sideways" screen; tablets (iPad etc.) can play either way up.
+  SG.isPhone = SG.isTouch && Math.min(screen.width || 9999, screen.height || 9999) < 600;
 
   // Logical resolution. The canvas is scaled to fit the window (letterboxed).
   SG.W = 1920;
@@ -115,8 +117,11 @@ window.SG = window.SG || {};
   // Sprite cache: renders drawFn(ctx) once into an offscreen canvas at the
   // current render scale (logical coords 0..w, 0..h) and reuses it.
   const spriteCache = new Map();
+  let spriteScale = 0;
   SG.sprite = function (key, w, h, drawFn) {
     const scale = Math.max(0.5, Math.min(2.5, (SG.view && SG.view.scale) || 1));
+    // the render scale changed (resize / rotation / lower quality): drop old-size sprites to save memory
+    if (Math.abs(scale - spriteScale) > 1e-3) { spriteCache.clear(); spriteScale = scale; }
     const k = key + '@' + scale.toFixed(3);
     let c = spriteCache.get(k);
     if (!c) {

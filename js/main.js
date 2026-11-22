@@ -65,6 +65,18 @@
 
   function isPortrait() { return SG.isTouch && window.innerHeight > window.innerWidth * 1.05; }
 
+  // Tablet held upright: the game still fits, so just suggest turning it in the empty bar above.
+  function drawTabletTip() {
+    const barH = view.oy;
+    if (barH < 40) return;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const size = Math.round(Math.min(barH * 0.22, canvas.width * 0.04));
+    ctx.font = `700 ${size}px ${SG.FONT}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.fillText('\u21BB  Turn sideways for a bigger picture', canvas.width / 2, barH / 2);
+  }
+
   function drawRotateOverlay(t) {
     const w = canvas.width, h = canvas.height, u = Math.min(w, h);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -152,7 +164,8 @@
     let dt = (now - last) / 1000;
     last = now;
     adaptQuality(dt);
-    const portrait = isPortrait();
+    const upright = isPortrait();
+    const portrait = upright && SG.isPhone;
     if (portrait && Game.name === 'game' && SG.Scenes.game && !SG.Scenes.game.paused) { SG.Scenes.game.paused = true; SG.Scenes.game.pauseSel = 0; }
     if (dt > 0.1) dt = 0.1;
     if (dt <= 0) dt = 0.001;
@@ -194,6 +207,7 @@
     }
     ctx.restore();
     if (portrait) drawRotateOverlay(now / 1000);
+    else if (upright) drawTabletTip();
   }
 
   function drawLoading() {

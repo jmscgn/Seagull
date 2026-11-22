@@ -47,6 +47,10 @@ files, and browsers only hand controllers to pages served over **HTTPS**, so hos
 4. Optional: *Add to Home Screen* for an app icon that launches full-screen. On iPhone, Safari can't
    make a page fullscreen any other way.
 
+**iPad:** it plays the same way as on iPhone, in either orientation; landscape gives the biggest
+picture. An iPad is the best mobile option for four players: pair up to four controllers, or use a
+Bluetooth keyboard for the keyboard layouts.
+
 **iPhone notes:** open the link in **Safari** itself, not in another app's built-in browser, because
 in-app browsers often don't pass controllers through. The game asks iOS to play its sound even with
 the ring/silent switch on (iOS 16.4+); on older iOS, flip the switch off. If a controller stops
