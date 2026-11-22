@@ -7,6 +7,8 @@ anyone who sees you coming — and be the gull with the fullest belly when the w
 
 *"Scran"* is Scots for food.
 
+**▶ Play it now: <https://jmscgn.github.io/Seagull/>** (plug in a controller, or use the keyboard)
+
 ![Gulls brawling over fish suppers on the Oban seafront](docs/oban.jpg)
 
 | Title screen (live attract mode) | Largs Prom: the ferry's in and it's chucking it down |
