@@ -368,8 +368,8 @@
       const m = SG.Input.menu();
       const items = ['RESUME', 'RESTART ROUND', 'QUIT TO MENU'];
       this.pauseSel = menuNav(this.pauseSel, items.length, m);
-      if (m.start && !this.lostPad()) { this.paused = false; SG.Audio.sfx('menuBack'); return; }
-      if (m.cancel && !this.lostPad()) { this.paused = false; SG.Audio.sfx('menuBack'); return; }
+      if (m.start && !m.confirm && !this.lostPad()) { this.paused = false; SG.Audio.sfx('menuBack'); return; }
+      if (m.cancel && !m.confirm && !this.lostPad()) { this.paused = false; SG.Audio.sfx('menuBack'); return; }
       if (m.confirm) {
         SG.Audio.sfx('menuSelect');
         if (this.pauseSel === 0) { if (!this.lostPad()) this.paused = false; }

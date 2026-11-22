@@ -235,24 +235,65 @@
       }
       return false;
     }
+    // Grid A* over the promenade with line-of-sight smoothing.
     planPath(x0, y0, x1, y1, ignoreBox) {
-      const path = [];
-      let cx = x0, cy = y0;
-      for (let iter = 0; iter < 6; iter++) {
-        const hit = this.segmentHit(cx, cy, x1, y1, ignoreBox);
-        if (!hit) { path.push([x1, y1]); return path; }
-        const dirx = Math.sign(x1 - cx) || 1;
-        const above = hit.y0 - 26, below = hit.y1 + 26;
-        const mid = (cy + y1) / 2;
-        let ys = Math.abs(above - mid) < Math.abs(below - mid) ? above : below;
-        if (ys < 594) ys = below; if (ys > 892) ys = above;
-        ys = M.clamp(ys, 594, 892);
-        const xa = dirx > 0 ? hit.x0 - 24 : hit.x1 + 24, xb = dirx > 0 ? hit.x1 + 24 : hit.x0 - 24;
-        path.push([xa, ys], [xb, ys]);
-        cx = xb; cy = ys;
+      if (!this.segmentHit(x0, y0, x1, y1, ignoreBox)) return [[x1, y1]];
+      const CS = 30, GX0 = -4, GX1 = Math.ceil(SG.W / CS) + 4, GY0 = 588, ROWS = 11;
+      const cols = GX1 - GX0 + 1;
+      const cx = (gx) => gx * CS + CS / 2, cy = (gy) => GY0 + gy * CS;
+      const free = (gx, gy) => gy >= 0 && gy < ROWS && gx >= GX0 && gx <= GX1 && !this.personBlocked(cx(gx), cy(gy), ignoreBox);
+      const toCell = (x, y) => [M.clamp(Math.round((x - CS / 2) / CS), GX0, GX1), M.clamp(Math.round((y - GY0) / CS), 0, ROWS - 1)];
+      const nearestFree = (c) => {
+        if (free(c[0], c[1])) return c;
+        for (let r = 1; r < 6; r++) for (let dx = -r; dx <= r; dx++) for (let dy = -r; dy <= r; dy++) if (free(c[0] + dx, c[1] + dy)) return [c[0] + dx, c[1] + dy];
+        return null;
+      };
+      const s0 = nearestFree(toCell(x0, y0)), g0 = nearestFree(toCell(x1, y1));
+      if (!s0 || !g0) return [[x1, y1]];
+      const key = (gx, gy) => (gy * cols) + (gx - GX0);
+      const gScore = new Map(), came = new Map();
+      const open = [[s0[0], s0[1], 0]];
+      gScore.set(key(s0[0], s0[1]), 0);
+      const h = (gx, gy) => Math.hypot(gx - g0[0], gy - g0[1]);
+      let found = false, guard = 0;
+      while (open.length && guard++ < 4000) {
+        let bi = 0;
+        for (let i = 1; i < open.length; i++) if (open[i][2] < open[bi][2]) bi = i;
+        const [gx, gy] = open.splice(bi, 1)[0];
+        if (gx === g0[0] && gy === g0[1]) { found = true; break; }
+        const gc = gScore.get(key(gx, gy));
+        for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+          if (!dx && !dy) continue;
+          const nx = gx + dx, ny = gy + dy;
+          if (!free(nx, ny)) continue;
+          if (dx && dy && (!free(gx + dx, gy) || !free(gx, gy + dy))) continue;
+          const ng = gc + (dx && dy ? 1.414 : 1);
+          const k = key(nx, ny);
+          if (ng < (gScore.has(k) ? gScore.get(k) : 1e9)) { gScore.set(k, ng); came.set(k, [gx, gy]); open.push([nx, ny, ng + h(nx, ny)]); }
+        }
       }
-      path.push([x1, y1]);
+      if (!found) return [[x1, y1]];
+      const cells = [];
+      let c = g0;
+      while (c) { cells.unshift([cx(c[0]), cy(c[1])]); c = came.get(key(c[0], c[1])); }
+      cells.push([x1, y1]);
+      // string-pull: skip waypoints we can see past
+      const path = [];
+      let px = x0, py = y0, i = 0;
+      while (i < cells.length) {
+        let j = cells.length - 1;
+        while (j > i && this.segmentHit(px, py, cells[j][0], cells[j][1], ignoreBox)) j--;
+        path.push(cells[j]); px = cells[j][0]; py = cells[j][1]; i = j + 1;
+      }
       return path;
+    }
+    freePoint(x, y, ignoreBox) {
+      if (!this.personBlocked(x, y, ignoreBox)) return [x, y];
+      for (let r = 20; r < 300; r += 20) for (let a = 0; a < 8; a++) {
+        const px = x + Math.cos(a * Math.PI / 4) * r, py = y + Math.sin(a * Math.PI / 4) * r * 0.6;
+        if (!this.personBlocked(px, py, ignoreBox)) return [px, py];
+      }
+      return [x, y];
     }
     segmentHit(x0, y0, x1, y1, ignoreBox) {
       const d = Math.hypot(x1 - x0, y1 - y0);
@@ -972,6 +1013,12 @@
         ctx.beginPath(); ctx.moveTo(-12, 6); ctx.lineTo(-14, -9); ctx.lineTo(-6, -1); ctx.lineTo(0, -12); ctx.lineTo(6, -1); ctx.lineTo(14, -9); ctx.lineTo(12, 6); ctx.closePath();
         SG.Art.fillStroke(ctx, '#ffd23f', 3);
         ctx.restore();
+      }
+      if (!g.cpu && g.carry && g.carryT > 2.2 && this.phase === 'play' && (g.eatHints || 0) < 4) {
+        const dev = SG.Input.get(g.deviceId);
+        const h = SG.Input.hints(dev && dev.type === 'gamepad' ? 'pad' : g.deviceId === 'kb2' ? 'keyboard2' : 'keyboard1');
+        SG.UI.hint(ctx, `HOLD ${h.peck} ON A PERCH TO EAT!`, g.x, y - 40 - Math.abs(Math.sin(t * 5)) * 6, { size: 20, fill: SG.rgba(g.dark, 0.92) });
+        if (g.carryT > 6) { g.carryT = 0; g.eatHints = (g.eatHints || 0) + 1; }
       }
       if (g.carry && !SG.FOODS[g.carry.type].small) {
         // bites-left pips while carrying

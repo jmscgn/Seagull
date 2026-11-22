@@ -248,6 +248,7 @@
       }
       if (this.grounded && this.vz > 0) this.grounded = false;
 
+      this.carryT = this.carry && !this.eating ? (this.carryT || 0) + dt : 0;
       // Flap animation phase
       const flapSpeed = this.grounded ? 0 : (this.flapAnim > 0 ? 26 : (this.vz > 0 ? 18 : 9));
       this.flapPhase += dt * flapSpeed;

@@ -254,6 +254,7 @@
       SG.text(ctx, String(n), 0, 0, { size: 220, font: SG.FONT_TITLE, weight: 400, color: '#ffd23f', strokeWidth: 26 });
       ctx.restore();
       SG.text(ctx, 'GET READY TAE SCRAN!', SG.W / 2, SG.H / 2 + 110, { size: 40, font: SG.FONT_TITLE, weight: 400 });
+      if (!session || session.round === 1) SG.controlsCard(ctx, SG.W / 2, SG.H - 120, 0.85);
     } else if (world.goT !== undefined && world.goT < 1.1 && world.phase === 'play') {
       const k = world.goT / 1.1;
       ctx.save(); ctx.translate(SG.W / 2, SG.H / 2 - 40); const s = M.easeOutBack(Math.min(1, k * 4)) * (1 + k * 0.4); ctx.scale(s, s); ctx.rotate(-0.05);

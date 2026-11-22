@@ -20,7 +20,7 @@ window.SG = window.SG || {};
   SG.SEAWALL_Y = 905;    // top of the sea wall
   SG.WATER_Y = 948;      // where the foreground sea starts
   SG.WATER_MAX_Y = 1050; // furthest a gull can float/fly towards camera
-  SG.SKY_Z = 470;        // ceiling for flying gulls
+  SG.SKY_Z = 400;        // ceiling for flying gulls (keeps them below the HUD)
 
   // Shop serving hatch geometry (shared by backdrop + gameplay).
   SG.HATCH = { halfW: 75, top: 440, bottom: 530, counterTop: 528, counterBottom: 552 };

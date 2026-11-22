@@ -104,6 +104,8 @@
 
     walkTo(x, y, goal) {
       this.goal = goal || null;
+      if (x > -40 && x < SG.W + 40) [x, y] = this.world.freePoint(x, y, goal && goal.ignoreBox);
+      this.dest = [x, y];
       this.path = this.world.planPath(this.x, this.y, x, y, goal && goal.ignoreBox);
       this.state = 'walk';
       this.stateT = 0;
@@ -246,10 +248,14 @@
       const step = Math.min(d, sp * dt);
       const nx = this.x + (dx / d) * step, ny = this.y + (dy / d) * step;
       const ign = this.goal && this.goal.ignoreBox;
-      if (!this.world.personBlocked(nx, ny, ign)) { this.x = nx; this.y = ny; this.stuckT = 0; }
-      else if (!this.world.personBlocked(nx, this.y, ign)) { this.x = nx; }
-      else if (!this.world.personBlocked(this.x, ny, ign)) { this.y = ny; }
-      else { this.stuckT += dt; if (this.stuckT > 0.6) { this.stuckT = 0; this.y += M.rand(-30, 30); } }
+      const w = this.world;
+      if (w.personBlocked(this.x, this.y, ign) || !w.personBlocked(nx, ny, ign)) { this.x = nx; this.y = ny; this.stuckT = 0; }
+      else if (Math.abs(nx - this.x) > step * 0.3 && !w.personBlocked(nx, this.y, ign)) { this.x = nx; }
+      else if (Math.abs(ny - this.y) > step * 0.3 && !w.personBlocked(this.x, ny, ign)) { this.y = ny; }
+      else {
+        this.stuckT += dt;
+        if (this.stuckT > 0.5 && this.state === 'walk' && this.dest) { this.stuckT = 0; this.path = w.planPath(this.x, this.y, this.dest[0], this.dest[1], ign); }
+      }
       this.angle = Math.atan2(dy * 1.3, dx);
       // occasional glance to the side while walking
       this.glanceT -= dt;
