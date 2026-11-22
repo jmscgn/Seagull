@@ -63,7 +63,7 @@
       const k = Math.min(1, this.t / 0.7);
       UI.logo(ctx, SG.W / 2, 330, this.t, M.easeOutBack(k));
       if (this.t > 0.8 && Math.floor(this.t * 2) % 2 === 0) SG.text(ctx, 'PRESS ANY BUTTON', SG.W / 2, 700, { size: 56, font: SG.FONT_TITLE, weight: 400, color: '#ffd23f', strokeWidth: 12 });
-      if (!SG.Audio.isRunning() && this.t > 1) UI.hint(ctx, '\u266A  Click or press any key to turn the sound on', SG.W / 2, 790, { size: 26, fill: 'rgba(255,77,109,0.9)' });
+      if (!SG.Audio.isRunning() && this.t > 1) UI.hint(ctx, SG.isTouch ? '\u266A  Tap the screen to turn the sound on' : '\u266A  Click or press any key to turn the sound on', SG.W / 2, 790, { size: 26, fill: 'rgba(255,77,109,0.9)' });
       const pads = SG.Input.gamepadCount();
       footer(ctx, pads ? `${pads} controller${pads > 1 ? 's' : ''} connected • 1–4 players` : 'Plug in up to 4 controllers • or play on keyboard (WASD + Space / Arrows + /)');
     },
@@ -85,7 +85,7 @@
       attract.draw(ctx, 0.35);
       UI.logo(ctx, SG.W / 2, 190, this.t, 0.62);
       UI.menu(ctx, this.items, this.sel, SG.W / 2, 400, this.t);
-      if (!SG.Audio.isRunning()) UI.hint(ctx, '\u266A  Click or press any key to turn the sound on', SG.W / 2, 980, { size: 24, fill: 'rgba(255,77,109,0.9)' });
+      if (!SG.Audio.isRunning()) UI.hint(ctx, SG.isTouch ? '\u266A  Tap the screen to turn the sound on' : '\u266A  Click or press any key to turn the sound on', SG.W / 2, 980, { size: 24, fill: 'rgba(255,77,109,0.9)' });
       footer(ctx, 'Navigate: Stick / D-pad / WASD / Arrows • Select: A / Space / Enter • Back: B / Esc');
     },
   };
@@ -615,7 +615,7 @@
         { key: 'cpuLevel', label: 'CPU gull skill', value: SG.AI_LEVELS[st.cpuLevel].name },
         { key: 'cones', label: 'Show sight cones', value: st.cones === false ? 'OFF' : 'ON' },
         { key: 'shake', label: 'Screen shake', value: st.shake ? 'ON' : 'OFF' },
-        { key: 'fullscreen', label: 'Fullscreen', value: document.fullscreenElement ? 'ON' : 'OFF' },
+        { key: 'fullscreen', label: 'Fullscreen', value: SG.canFullscreen() ? (SG.isFullscreen() ? 'ON' : 'OFF') : 'N/A' },
         { key: 'back', label: 'Back' },
       ];
     },
@@ -629,7 +629,7 @@
         case 'cones': st.cones = st.cones === false; break;
         case 'shake': st.shake = !st.shake; break;
         case 'fullscreen':
-          try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); } catch (e) { /* not allowed */ }
+          if (SG.isFullscreen()) SG.exitFullscreen(); else SG.goFullscreen();
           break;
         default: return;
       }

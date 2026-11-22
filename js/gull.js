@@ -229,11 +229,13 @@
       if (!w.blocked(nx, this.y, this.z)) this.x = nx; else { this.vx = 0; if (this.dashT > 0) this.dashT = 0; }
       const ny = M.clamp(this.y + this.vy * dt, 552, SG.WATER_MAX_Y);
       if (!w.blocked(this.x, ny, this.z)) this.y = ny; else { this.vy = 0; }
+      const zPrev = this.z;
       this.z += this.vz * dt;
       if (this.z > SG.SKY_Z) { this.z = SG.SKY_Z; if (this.vz > 0) this.vz = 0; }
 
       // Floor
-      this.floor = w.floorAt(this.x, this.y, this.z);
+      // test against the height at the start of the step so fast falls can't tunnel through thin perches
+      this.floor = w.floorAt(this.x, this.y, Math.max(this.z, zPrev));
       this.inWater = this.floor <= 0 && w.isWater(this.x, this.y);
       if (this.z <= this.floor) {
         if (!this.grounded) {

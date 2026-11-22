@@ -8,6 +8,9 @@ window.SG = window.SG || {};
 (function (SG) {
   'use strict';
 
+  // Phones & tablets (coarse pointer): used for tap prompts, fullscreen and the rotate hint.
+  SG.isTouch = !!((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || ('ontouchstart' in window));
+
   // Logical resolution. The canvas is scaled to fit the window (letterboxed).
   SG.W = 1920;
   SG.H = 1080;

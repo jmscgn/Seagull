@@ -22,6 +22,69 @@
   window.addEventListener('resize', resize);
   resize();
 
+  // ------------------------------------------------------------------ phones & tablets
+  const docEl = document.documentElement;
+  SG.canFullscreen = () => !!(docEl.requestFullscreen || docEl.webkitRequestFullscreen);
+  SG.isFullscreen = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  SG.goFullscreen = function () {
+    try {
+      const req = docEl.requestFullscreen ? docEl.requestFullscreen({ navigationUI: 'hide' }) : docEl.webkitRequestFullscreen && docEl.webkitRequestFullscreen();
+      Promise.resolve(req).then(() => {
+        if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
+      }).catch(() => {});
+    } catch (e) { /* not allowed here */ }
+  };
+  SG.exitFullscreen = function () {
+    try { if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); } catch (e) { /* ignore */ }
+  };
+  // First tap on a phone: go fullscreen + landscape (where the browser allows it).
+  let firstTap = true;
+  window.addEventListener('pointerdown', (e) => {
+    if (firstTap && SG.isTouch && e.pointerType !== 'mouse') { firstTap = false; if (!SG.isFullscreen()) SG.goFullscreen(); }
+  });
+  // Controller-only play doesn't count as touching the screen, so ask the OS not to dim it.
+  let wakeLock = null;
+  async function keepAwake() {
+    try {
+      if (!('wakeLock' in navigator) || document.hidden || wakeLock) return;
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } catch (e) { wakeLock = null; }
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) keepAwake(); });
+  window.addEventListener('pointerdown', keepAwake);
+  window.addEventListener('keydown', keepAwake);
+  // Installable web app (only when served over http/https; file:// can't load a manifest).
+  if (/^https?:/.test(location.protocol)) {
+    const link = document.createElement('link');
+    link.rel = 'manifest'; link.href = 'manifest.webmanifest';
+    document.head.appendChild(link);
+  }
+
+  function isPortrait() { return SG.isTouch && window.innerHeight > window.innerWidth * 1.05; }
+
+  function drawRotateOverlay(t) {
+    const w = canvas.width, h = canvas.height, u = Math.min(w, h);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#1d1640'; ctx.fillRect(0, 0, w, h);
+    // a wee phone turning sideways
+    const k = SG.M.easeInOut(Math.min(1, Math.max(0, (Math.sin(t * 2) + 0.3))));
+    ctx.save();
+    ctx.translate(w / 2, h * 0.38);
+    ctx.rotate(-k * Math.PI / 2);
+    SG.roundRect(ctx, -u * 0.12, -u * 0.22, u * 0.24, u * 0.44, u * 0.035);
+    ctx.fillStyle = '#2bb3a6'; ctx.fill(); ctx.lineWidth = u * 0.018; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+    ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(0, u * 0.16, u * 0.018, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `400 ${Math.round(u * 0.085)}px ${SG.FONT_TITLE}`;
+    ctx.lineJoin = 'round'; ctx.lineWidth = u * 0.016; ctx.strokeStyle = SG.INK;
+    ctx.strokeText('TURN YOUR PHONE', w / 2, h * 0.72); ctx.fillStyle = '#ffd23f'; ctx.fillText('TURN YOUR PHONE', w / 2, h * 0.72);
+    ctx.strokeText('SIDEWAYS', w / 2, h * 0.72 + u * 0.1); ctx.fillText('SIDEWAYS', w / 2, h * 0.72 + u * 0.1);
+    ctx.font = `700 ${Math.round(u * 0.04)}px ${SG.FONT}`; ctx.fillStyle = '#ffffff';
+    ctx.fillText('SCRAN! plays in landscape', w / 2, h * 0.72 + u * 0.19);
+  }
+
   // Pre-rendered backdrops, rebuilt when the render scale changes a lot.
   const bdCache = {};
   SG.getBackdrop = function (id) {
@@ -87,6 +150,8 @@
     let dt = (now - last) / 1000;
     last = now;
     adaptQuality(dt);
+    const portrait = isPortrait();
+    if (portrait && Game.name === 'game' && SG.Scenes.game && !SG.Scenes.game.paused) { SG.Scenes.game.paused = true; SG.Scenes.game.pauseSel = 0; }
     if (dt > 0.1) dt = 0.1;
     if (dt <= 0) dt = 0.001;
 
@@ -126,6 +191,7 @@
       ctx.fillText(errShown, 10, SG.H - 80);
     }
     ctx.restore();
+    if (portrait) drawRotateOverlay(now / 1000);
   }
 
   function drawLoading() {
@@ -141,6 +207,7 @@
     started = true;
     SG.DEBUG = /debug/.test(location.search);
     SG.Audio.init();
+    keepAwake();
     SG.Audio.setVolumes(SG.settings.master, SG.settings.music, SG.settings.sfx);
     // warm the backdrop cache so the first scene doesn't hitch
     for (const id of SG.STAGE_ORDER) SG.getBackdrop(id);

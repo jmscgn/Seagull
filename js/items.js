@@ -65,6 +65,7 @@
       const w = this.world;
       if (!this.grounded) {
         this.vz -= 1500 * dt;
+        const zPrev = this.z;
         this.x += this.vx * dt; this.y += this.vy * dt; this.z += this.vz * dt;
         this.rot += this.vx * 0.01 * dt * 6;
         this.x = M.clamp(this.x, 15, SG.W - 15);
@@ -73,7 +74,7 @@
         if (this.y > SG.GROUND_BOTTOM && this.y < SG.WATER_Y - 4 && this.z < 30 && this.vy > 0 && this.y < SG.SEAWALL_Y + 30) {
           // land on the railing/wall top (it's a box) — handled by floor
         }
-        this.floor = w.floorAt(this.x, this.y, this.z);
+        this.floor = w.floorAt(this.x, this.y, Math.max(this.z, zPrev));
         if (this.z <= this.floor) {
           this.z = this.floor;
           if (this.vz < -220) {

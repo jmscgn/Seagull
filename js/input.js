@@ -153,7 +153,8 @@
       clickedThisFrame = false;
       keysPressedThisFrame.clear();
 
-      const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+      let pads = [];
+      try { pads = (navigator.getGamepads && navigator.getGamepads()) || []; } catch (e) { pads = []; }
       const seen = new Set();
       for (let i = 0; i < pads.length; i++) {
         const gp = pads[i];

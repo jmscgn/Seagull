@@ -30,6 +30,25 @@ anyone who sees you coming — and be the gull with the fullest belly when the w
 
 No controllers? Two players can share a keyboard, and empty slots are filled with CPU gulls.
 
+### Playing on a phone or tablet
+
+You need a controller: there are no on-screen touch controls. Phones can't open a folder of local
+files, and browsers only hand controllers to pages served over **HTTPS**, so host the game first
+(GitHub Pages or any static host) and open that link.
+
+1. Pair the controller with the phone over Bluetooth (Xbox, PlayStation and Switch Pro pads all work
+   on recent iOS and Android).
+2. Open the game's HTTPS link in **Safari** (iPhone/iPad) or **Chrome** (Android) and hold the phone
+   **sideways**. In portrait the game pauses and asks you to turn the phone.
+3. **Tap the screen once.** This switches the sound on and, on Android, goes fullscreen in landscape.
+   Then press a button on the controller so the browser notices it.
+4. Optional: *Add to Home Screen* for an app icon that launches full-screen. On iPhone, Safari can't
+   make a page fullscreen any other way.
+
+While the game is open it asks the phone to keep the screen awake, so it won't dim when you're only
+using the controller. Several controllers can pair with one phone, but four players will be happier
+on a TV or laptop screen.
+
 ### Controls
 
 | Action | Controller | Keyboard 1 | Keyboard 2 |
