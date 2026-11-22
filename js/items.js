@@ -206,6 +206,15 @@
         case 'puff': ctx.globalAlpha = (1 - k) * 0.85; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(sx, sy, p.size * (0.6 + k), 0, Math.PI * 2); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = SG.rgba(SG.INK, 0.35 * (1 - k)); ctx.stroke(); break;
         case 'sparkle': ctx.globalAlpha = 1 - k; SG.Art.star(ctx, sx, sy, p.size * (1 - k * 0.5), p.color, p.rot); break;
         case 'crumb': case 'drop': ctx.globalAlpha = 1 - k * 0.6; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(sx, sy, p.size, 0, Math.PI * 2); ctx.fill(); break;
+        case 'wave': {
+          ctx.globalAlpha = 1 - k; ctx.strokeStyle = p.color || '#fff'; ctx.lineCap = 'round';
+          for (let i = 0; i < 3; i++) {
+            const r = p.size + k * 60 + i * 14;
+            ctx.lineWidth = 6 - i * 1.5;
+            ctx.beginPath(); ctx.arc(sx, sy, r, p.dir > 0 ? -0.7 : Math.PI - 0.7, p.dir > 0 ? 0.7 : Math.PI + 0.7); ctx.stroke();
+          }
+          break;
+        }
         case 'ring': ctx.globalAlpha = 1 - k; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(sx, sy, p.size + k * 40, (p.size + k * 40) * 0.3, 0, 0, Math.PI * 2); ctx.stroke(); break;
         case 'burst': {
           ctx.globalAlpha = 1 - k; ctx.strokeStyle = '#fff6c8'; ctx.lineWidth = 5; ctx.lineCap = 'round';

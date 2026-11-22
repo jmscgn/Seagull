@@ -392,6 +392,7 @@
         g.stats.sneaky++;
         this.award(g, 20, 'sneaky');
         this.fx.text('SNEAKY BEAK!', g.x, g.y - g.z - 115 * s, { size: 28, color: '#7df9ff' });
+        if (M.chance(0.4)) SG.Audio.sfx('laugh', { pitch: g.voice, vol: 0.55, pan: SG.panFor(g.x), delay: 0.25 });
       } else this.fx.text('YOINK!', g.x, g.y - g.z - 115 * s, { size: 28, color: '#ffffff' });
       if (SG.FOODS[food.type].spills || food.type === 'supper') {
         for (let i = 0; i < M.randInt(1, 3); i++) {
@@ -472,6 +473,7 @@
       const res = v.hit(v.x - a.x + (v.x === a.x ? a.facing : 0), v.y - a.y, P[0], P[1], a, mode);
       if (!res) return false;
       a.stats.hits++;
+      if (mode !== 'peck') this.hitStop = Math.max(this.hitStop || 0, mode === 'swoop' ? 0.08 : 0.06);
       if (mode === 'dash') { a.dashT = 0; a.vx *= -0.3; a.vy *= -0.3; }
       if (res.dropped && mode !== 'peck' && !a.carry) {
         a.take(res.dropped.type, res.dropped.bites, 'steal');
@@ -527,6 +529,8 @@
     }
 
     onSquawk(g) {
+      const s = SG.depthScale(g.y);
+      this.fx.add({ type: 'wave', x: g.x + g.facing * 46 * s, y: g.y, z: g.z + 48 * s, vx: 0, vy: 0, vz: 0, life: 0.5, age: 0, size: 16, dir: g.facing, color: g.color });
       for (const p of this.people) {
         const d = Math.hypot(p.x - g.x, (p.y - g.y) * 1.4);
         if (d < 330 && p.state !== 'piping') p.startled(g);

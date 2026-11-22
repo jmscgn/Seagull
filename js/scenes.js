@@ -334,6 +334,8 @@
         if (d.pressed.start) { this.paused = true; this.pauseSel = 0; SG.Audio.sfx('menuSelect'); SG.Input.flush(); return; }
       }
       if (this.lostPad()) { this.paused = true; this.pauseSel = 0; return; }
+      // hit-stop: freeze the action for a few frames on big hits
+      if (w.hitStop > 0) { w.hitStop -= dt; w.fx.update(dt * 0.25); return; }
       // substeps for stable collisions; presses only count on the first
       const steps = Math.max(1, Math.ceil(dt / (1 / 60)));
       const h = dt / steps;
